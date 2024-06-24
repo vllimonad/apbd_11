@@ -6,11 +6,11 @@ namespace apbd_11.Services;
 
 public interface IApplicationService
 {
-    void RegisterUser(RegisterRequest model);
+    void Register(RegisterRequest model);
     LoginResponseModel Login(LoginRequestModel model);
     string GenerateRefreshToken();
     string GetHashedPasswordWithSalt(string password, string salt);
-    Tuple<string, string> GetHashedPasswordAndSalt(string password);
+    string[] GetHashedPasswordAndSalt(string password);
 
     LoginResponseModel Refresh(string refreshToken);
 }
