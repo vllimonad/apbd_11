@@ -6,10 +6,11 @@ namespace apbd_11.Services;
 
 public interface IApplicationService
 {
-    void Register(RegisterRequest model);
-    LoginResponseModel Refresh(string refreshToken);
-    LoginResponseModel Login(LoginRequestModel model);
+    Task Register(RegisterRequest model);
+    Task<LoginResponseModel> Refresh(string refreshToken);
+    Task<LoginResponseModel> Login(LoginRequestModel model);
     string GenerateRefreshToken();
     string[] GetHashedPasswordAndSalt(string password);
     string GetHashedPasswordWithSalt(string password, string salt);
+    Task<bool> IsAuthorized(string username, string password);
 }

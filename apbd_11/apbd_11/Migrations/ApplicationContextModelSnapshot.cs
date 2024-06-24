@@ -30,17 +30,15 @@ namespace apbd_11.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Login")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("RefreshToken")
                         .IsRequired()
@@ -61,7 +59,6 @@ namespace apbd_11.Migrations
                         new
                         {
                             Id = 1,
-                            Email = "wiun2@sdc.dc",
                             Login = "qqq",
                             Password = "1234",
                             RefreshToken = "",
@@ -71,7 +68,6 @@ namespace apbd_11.Migrations
                         new
                         {
                             Id = 2,
-                            Email = "ounfde@iec.cf",
                             Login = "www",
                             Password = "12345",
                             RefreshToken = "",
@@ -81,7 +77,6 @@ namespace apbd_11.Migrations
                         new
                         {
                             Id = 3,
-                            Email = "083nf@4pfr.5ty",
                             Login = "eee",
                             Password = "12346",
                             RefreshToken = "",

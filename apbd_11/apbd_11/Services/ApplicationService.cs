@@ -6,6 +6,7 @@ using apbd_11.Context;
 using apbd_11.Controllers;
 using apbd_11.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RegisterRequest = apbd_11.Controllers.RegisterRequest;
 
@@ -22,7 +23,7 @@ public class ApplicationService : IApplicationService
         _config = config;
     }
 
-    public void Register(RegisterRequest model)
+    public async Task Register(RegisterRequest model)
     {
         var hashedPasswordAndSalt = GetHashedPasswordAndSalt(model.Password);
         var user = new ApplicationUser
@@ -30,13 +31,15 @@ public class ApplicationService : IApplicationService
             Login = model.Login,
             Password = hashedPasswordAndSalt[0],
             Salt = hashedPasswordAndSalt[1],
+            RefreshTokenExp = DateTime.Now,
+            RefreshToken = ""
         };
         if (_context.Users.Any(u => u.Login.Equals(model.Login))) throw new Exception("This login already exist");
-        _context.Users.Add(user);
-        _context.SaveChanges();
+        await _context.Users.AddAsync(user);
+        await _context.SaveChangesAsync();
     }
 
-    public LoginResponseModel Login(LoginRequestModel model)
+    public async Task<LoginResponseModel> Login(LoginRequestModel model)
     {
         if (! _context.Users.Any(u => u.Login.Equals(model.UserName))) throw new Exception("This user does not exist");
         
@@ -61,7 +64,7 @@ public class ApplicationService : IApplicationService
         var refreshToken = GenerateRefreshToken();
         applicationUser.RefreshToken = refreshToken;
         applicationUser.RefreshTokenExp = DateTime.Now.AddDays(7);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return new LoginResponseModel
         {
             Token = stringToken,
@@ -69,7 +72,7 @@ public class ApplicationService : IApplicationService
         };
     }
     
-    public LoginResponseModel Refresh(string refreshToken)
+    public async Task<LoginResponseModel> Refresh(string refreshToken)
     {
         ApplicationUser user = _context.Users.FirstOrDefault(u => u.RefreshToken == refreshToken)!;
         if (user is null) throw new SecurityTokenException("Invalid refresh token");
@@ -89,7 +92,7 @@ public class ApplicationService : IApplicationService
         var newRefreshToken = GenerateRefreshToken();
         user.RefreshToken = newRefreshToken;
         user.RefreshTokenExp = DateTime.Now.AddDays(7);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return new LoginResponseModel()
         {
@@ -138,5 +141,10 @@ public class ApplicationService : IApplicationService
             generator.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
+    }
+
+    public async Task<bool> IsAuthorized(string username, string password)
+    {
+        return await _context.Users.AnyAsync(u => u.Login == username & u.Password == password);
     }
 }

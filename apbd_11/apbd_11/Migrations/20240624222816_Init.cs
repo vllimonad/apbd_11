@@ -19,9 +19,8 @@ namespace apbd_11.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Login = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Login = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Salt = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RefreshTokenExp = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -33,12 +32,12 @@ namespace apbd_11.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "Email", "Login", "Password", "RefreshToken", "RefreshTokenExp", "Salt" },
+                columns: new[] { "Id", "Login", "Password", "RefreshToken", "RefreshTokenExp", "Salt" },
                 values: new object[,]
                 {
-                    { 1, "wiun2@sdc.dc", "qqq", "1234", "", new DateTime(2024, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "" },
-                    { 2, "ounfde@iec.cf", "www", "12345", "", new DateTime(2024, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "" },
-                    { 3, "083nf@4pfr.5ty", "eee", "12346", "", new DateTime(2024, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "" }
+                    { 1, "qqq", "1234", "", new DateTime(2024, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "" },
+                    { 2, "www", "12345", "", new DateTime(2024, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "" },
+                    { 3, "eee", "12346", "", new DateTime(2024, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), "" }
                 });
         }
 

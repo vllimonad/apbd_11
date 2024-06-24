@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace apbd_11.Controllers;
 
-[Route("/api/[controller]")]
+[Route("/api/middleware")]
 [ApiController]
 public class MiddlewareController(IApplicationService service) : ControllerBase
 {
@@ -19,35 +19,22 @@ public class MiddlewareController(IApplicationService service) : ControllerBase
     [HttpPost("/register")]
     public IActionResult Register(RegisterRequest model)
     {
-        try { 
-            service.Register(model);
-            return Ok("Registered");
-        } catch (Exception e) {
-            return Unauthorized(e.Message);
-        }
+        service.Register(model); 
+        return Ok("Registered");
     }
     
     [AllowAnonymous]
     [HttpPost("/login")]
     public IActionResult Login(LoginRequestModel model) 
     {
-        try { 
-            return Ok(service.Login(model));
-        } catch (Exception e) {
-            return Unauthorized(e.Message);
-        }
+        return Ok(service.Login(model));
     }
     
     [Authorize]
     [HttpPost("/refresh")]
     public IActionResult RefreshToken([Required] string token)
-    {
-        try {
-            return Ok(service.Refresh(token));
-        }
-        catch (Exception e) {
-            return BadRequest(e.Message);
-        }
+    { 
+        return Ok(service.Refresh(token));
     }
     
     [Authorize]
