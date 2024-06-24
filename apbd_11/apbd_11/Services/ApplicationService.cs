@@ -28,10 +28,8 @@ public class ApplicationService : IApplicationService
         var user = new ApplicationUser
         {
             Login = model.Login,
-            Email = model.Email,
             Password = hashedPasswordAndSalt[0],
             Salt = hashedPasswordAndSalt[1],
-            
         };
         if (_context.Users.Any(u => u.Login.Equals(model.Login))) throw new Exception("This login already exist");
         _context.Users.Add(user);
@@ -49,30 +47,54 @@ public class ApplicationService : IApplicationService
         
         SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"]));
         SigningCredentials signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        
-        Claim[] claims =
-        {
-            new Claim(ClaimTypes.Name, applicationUser.Login),
-        };
 
         JwtSecurityToken token = new JwtSecurityToken(
             issuer: _config["JWT:Issuer"],
             audience: _config["JWT:Audience"],
-            expires: DateTime.UtcNow.AddMinutes(15),
+            expires: DateTime.UtcNow.AddMinutes(60),
             signingCredentials: signingCredentials,
-            claims: claims
+            claims: new[]{new Claim(ClaimTypes.Name, applicationUser.Login)}
             );
         
         var stringToken = new JwtSecurityTokenHandler().WriteToken(token);
         
         var refreshToken = GenerateRefreshToken();
         applicationUser.RefreshToken = refreshToken;
-        applicationUser.RefreshTokenExp = DateTime.Now.AddDays(1);
+        applicationUser.RefreshTokenExp = DateTime.Now.AddDays(7);
         _context.SaveChanges();
         return new LoginResponseModel
         {
             Token = stringToken,
             RefreshToken = refreshToken
+        };
+    }
+    
+    public LoginResponseModel Refresh(string refreshToken)
+    {
+        ApplicationUser user = _context.Users.FirstOrDefault(u => u.RefreshToken == refreshToken)!;
+        if (user is null) throw new SecurityTokenException("Invalid refresh token");
+        if (user.RefreshTokenExp < DateTime.Now) throw new SecurityTokenException("Refresh token expired");
+
+        SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"] ?? string.Empty));
+        SigningCredentials signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        JwtSecurityToken token = new JwtSecurityToken(
+            issuer: _config["JWT:Issuer"],
+            audience: _config["JWT:Audience"],
+            expires: DateTime.UtcNow.AddMinutes(60),
+            signingCredentials: signingCredentials,
+            claims: new[]{new Claim(ClaimTypes.Name, user.Login)}
+        );
+
+        var newRefreshToken = GenerateRefreshToken();
+        user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExp = DateTime.Now.AddDays(7);
+        _context.SaveChanges();
+
+        return new LoginResponseModel()
+        {
+            RefreshToken = newRefreshToken,
+            Token = new JwtSecurityTokenHandler().WriteToken(token)
         };
     }
     
@@ -94,40 +116,6 @@ public class ApplicationService : IApplicationService
         var saltBase64 = Convert.ToBase64String(salt);
 
         return new[]{hashed, saltBase64};
-    }
-
-    public LoginResponseModel Refresh(string refreshToken)
-    {
-        ApplicationUser user = _context.Users.FirstOrDefault(u => u.RefreshToken == refreshToken)!;
-        if (user is null) throw new SecurityTokenException("Invalid refresh token");
-        if (user.RefreshTokenExp < DateTime.Now) throw new SecurityTokenException("Refresh token expired");
-
-        SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"] ?? string.Empty));
-        SigningCredentials signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        
-        Claim[] claims =
-        {
-            new Claim(ClaimTypes.Name, user.Login),
-        };
-
-        JwtSecurityToken token = new JwtSecurityToken(
-            issuer: _config["JWT:Issuer"],
-            audience: _config["JWT:Audience"],
-            expires: DateTime.UtcNow.AddMinutes(15),
-            signingCredentials: signingCredentials,
-            claims: claims
-        );
-
-        var newRefreshToken = GenerateRefreshToken();
-        user.RefreshToken = newRefreshToken;
-        user.RefreshTokenExp = DateTime.Now.AddDays(1);
-        _context.SaveChanges();
-
-        return new LoginResponseModel()
-        {
-            RefreshToken = newRefreshToken,
-            Token = new JwtSecurityTokenHandler().WriteToken(token)
-        };
     }
 
     public string GetHashedPasswordWithSalt(string password, string salt)
