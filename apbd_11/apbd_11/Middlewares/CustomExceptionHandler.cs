@@ -14,30 +14,27 @@ public class CustomExceptionHandler
     
     public async Task InvokeAsync(HttpContext context)
     {
-        try
+        Console.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
+        try 
         {
             await _next(context);
-        }
+        } 
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred");
-            await HandleExceptionAsync(context, ex);
-        }
-    }
-    
-    private Task HandleExceptionAsync(HttpContext context, Exception exception)
-    {
-        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-        context.Response.ContentType = "application/json";
-        var response = new
-        {
-            error = new
+            _logger.LogError(ex, "An exception occurred");
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            context.Response.ContentType = "application/json";
+            var response = new
             {
-                message = "An error occurred while processing your request.",
-                detail = exception.Message
-            }
-        };
-        var jsonResponse = System.Text.Json.JsonSerializer.Serialize(response);
-        return context.Response.WriteAsync(jsonResponse);
+                error = new
+                {
+                    message = "An error occurred while processing request",
+                    detail = ex.Message
+                }
+            };
+            var jsonResponse = System.Text.Json.JsonSerializer.Serialize(response);
+            await context.Response.WriteAsync(jsonResponse);
+        }
+        Console.WriteLine($"Response: {context.Response.StatusCode}");
     }
 }
