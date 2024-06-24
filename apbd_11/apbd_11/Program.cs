@@ -14,10 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(options =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
@@ -26,7 +26,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
         {
             new OpenApiSecurityScheme
@@ -49,15 +49,14 @@ builder.Services.AddScoped<IApplicationService, ApplicationService>();
 builder.Services.AddDbContext<ApplicationContext>(
     options => options.UseSqlServer("Name=ConnectionStrings:Docker"));
 
-builder.Services.AddAuthentication(
-        options =>
+builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
-    .AddJwtBearer(opt =>
+    .AddJwtBearer(options =>
     {
-        opt.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
@@ -67,7 +66,7 @@ builder.Services.AddAuthentication(
             ValidAudience = builder.Configuration["JWT:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!))
         };
-        opt.Events = new JwtBearerEvents
+        options.Events = new JwtBearerEvents
         {
             OnAuthenticationFailed = context =>
             {
@@ -79,9 +78,9 @@ builder.Services.AddAuthentication(
                 return Task.CompletedTask;
             }
         };
-    }).AddJwtBearer("IgnoreTokenExpirationScheme",opt =>
+    }).AddJwtBearer("IgnoreTokenExpirationScheme",options =>
     {
-        opt.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,

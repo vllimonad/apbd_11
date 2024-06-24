@@ -7,10 +7,9 @@ namespace apbd_11.Services;
 public interface IApplicationService
 {
     void Register(RegisterRequest model);
+    LoginResponseModel Refresh(string refreshToken);
     LoginResponseModel Login(LoginRequestModel model);
     string GenerateRefreshToken();
-    string GetHashedPasswordWithSalt(string password, string salt);
     string[] GetHashedPasswordAndSalt(string password);
-
-    LoginResponseModel Refresh(string refreshToken);
+    string GetHashedPasswordWithSalt(string password, string salt);
 }
