@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace apbd_11.Controllers;
 
 [Route("api/[controller]")]
-public class ExamplesController(IConfiguration config) : ControllerBase
+public class MiddlewareController(IConfiguration config) : ControllerBase
 {
     [HttpGet("hash-password-without-salt/{password}")]
     public IActionResult HashPassword(string password)
@@ -135,4 +135,15 @@ public class LoginResponseModel
 public class RefreshTokenRequestModel
 {
     public string RefreshToken { get; set; } = null!;
+}
+
+public class RegisterRequest
+{
+    [Required]
+    public string Email { get; set; } = null!;
+    [Required]
+    public string Password { get; set; } = null!;
+    [Required]
+    public string Login { get; set; } = null!;
+
 }
