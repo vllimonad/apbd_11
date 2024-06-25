@@ -5,12 +5,9 @@ using apbd_11.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
@@ -72,7 +69,6 @@ if (app.Environment.IsDevelopment())
 
 }
 
-app.UseMiddleware<BasicAuthMiddleware>();
 app.UseMiddleware<CustomExceptionHandler>();
 app.UseHttpsRedirection();
 app.MapControllers();
